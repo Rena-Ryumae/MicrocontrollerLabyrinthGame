@@ -22,7 +22,7 @@ typedef struct board_state {
 	// Ball's goal location
 	int finishx;
 	int finishy;
-	struct box_state maze[2][2]; // Array of boxes 2x2 array
+	struct box_state maze[4][4]; // Array of boxes 2x2 array
 	int finish; // 1 if ball reached goal location
 } board;
 
@@ -45,14 +45,14 @@ box initializeBox(unsigned int w, ball * b, box * bx, int ycoord, int xcoord) {
 	return *bx;
 }
 
-void initializeBoard(int finx, int finy, unsigned int walls[2][2], board * brd, ball * b) {
+void initializeBoard(int finx, int finy, unsigned int walls[4][4], board * brd, ball * b) {
 	brd->startx = 0;
 	brd->starty = 0;
 	brd->finishx = finx;
 	brd->finishy = finy;
 	brd->finish = 0;
-	for (int row = 0; row < 2; row++) {
-		for (int col = 0; col < 2; col++) {
+	for (int row = 0; row < 4; row++) {
+		for (int col = 0; col < 4; col++) {
 			box * bx = malloc(sizeof (box));
 			int wall = walls[row][col];
 			brd->maze[row][col] = initializeBox(wall, b, bx, row, col);	
@@ -75,5 +75,6 @@ void moveBall(unsigned int d, ball * b, board * brd) {
 		else if (d == 2) update(b->y, b->x - 1, brd, b); // Move left
 		else if (d == 4) update(b->y + 1, b->x, brd, b); // Move down
 		else update(b->y - 1, b->x, brd, b); // Move up
+		if ((brd->finishx == b->x) && (brd->finishy == b->y)) {brd->finish = 1;}
 	}
 }
