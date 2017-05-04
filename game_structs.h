@@ -7,13 +7,13 @@ typedef struct ball_state {
 	int y;
 } ball;
 
-typedef struct box_state {
+/*typedef struct box_state {
 	// Box's location
 	int x;
 	int y;
 	int filled; // 1 if ball is in box, 0 otherwise
 	unsigned int wall; // 4 bits, (up, down, left, right)
-} box;
+} box; */
 
 typedef struct board_state {
 	// Ball's starting location
@@ -22,7 +22,8 @@ typedef struct board_state {
 	// Ball's goal location
 	int finishx;
 	int finishy;
-	struct box_state maze[4][4]; // Array of boxes 2x2 array
+	//struct box_state maze[4][4]; // Array of boxes 2x2 array
+	unsigned int maze[10][10];
 	int finish; // 1 if ball reached goal location
 } board;
 
@@ -32,7 +33,7 @@ void initializeBall(ball * b) {
 	b->y = 0;
 	return;
 }
-
+/*
 box initializeBox(unsigned int w, ball * b, box * bx, int ycoord, int xcoord) {
 	bx->wall = w;
 	bx->x = xcoord;
@@ -43,19 +44,27 @@ box initializeBox(unsigned int w, ball * b, box * bx, int ycoord, int xcoord) {
 		bx->filled = 0;
 	}
 	return *bx;
-}
+}*/
 
-void initializeBoard(int finx, int finy, unsigned int walls[4][4], board * brd, ball * b) {
+void initializeBoard(int finx, int finy, unsigned int walls[10][10], board * brd, ball * b) {
 	brd->startx = 0;
 	brd->starty = 0;
 	brd->finishx = finx;
 	brd->finishy = finy;
 	brd->finish = 0;
-	for (int row = 0; row < 4; row++) {
-		for (int col = 0; col < 4; col++) {
-			box * bx = malloc(sizeof (box));
-			int wall = walls[row][col];
-			brd->maze[row][col] = initializeBox(wall, b, bx, row, col);	
+	for (int row = 0; row < 10; row++) {
+		for (int col = 0; col < 10; col++) {
+			//box * bx = malloc(sizeof (box));
+			//brd->maze[row][col] = initializeBox(wall, b, bx, row, col);	
+			brd->maze[row][col] &= 0x00;
+			brd->maze[row][col] |= walls[row][col]; 
+			if (row == 0 && col == 0) {
+				brd->maze[row][col] &= 0x0F; // Give filled 0 
+				brd->maze[row][col] |= 0x10; // Give filled 1
+			}
+			else {
+				brd->maze[row][col] &= 0x0F; // Give filled 0 
+			}
 		}
 	}
 }
@@ -63,14 +72,15 @@ void initializeBoard(int finx, int finy, unsigned int walls[4][4], board * brd, 
 void update(int newy, int newx, board * brd, ball * b) {
 	b->x = newx;
 	b->y = newy;
-	brd->maze[b->y][b->x].filled = 1;
+	brd->maze[b->y][b->x] |= 0x10; // Filled value becomes 1
 }
 
 void moveBall(unsigned int d, ball * b, board * brd) {
-	unsigned int check = brd->maze[b->y][b->x].wall & d;
+	unsigned int wall = brd->maze[b->y][b->x] & 0x0F; //Gets last 4 bits (wall)
+	unsigned int check = wall & d;
 	// No wall, ball can move there
 	if (check != d) {
-		brd->maze[b->y][b->x].filled = 0;
+		brd->maze[b->y][b->x] &= 0x0F; // Change filled to 0
 		if (d == 1) update(b->y, b->x + 1, brd, b);			// Move right
 		else if (d == 2) update(b->y, b->x - 1, brd, b); // Move left
 		else if (d == 4) update(b->y + 1, b->x, brd, b); // Move down

@@ -10,27 +10,29 @@ ACCELEROMETER_STATE state2;
 ACCELEROMETER_STATE state3;
 
 void tmpprint (board * brd) {
-	int w;
+	unsigned int w;
+	unsigned int f;
 	debug_printf("------------------------\r\n");
-  for (int row = 0; row < 4; row++) {
-		for (int col = 0; col < 4; col++) {
-			w = brd->maze[row][col].wall;
-			if (w == 0)      {debug_printf("   %d   ", brd->maze[row][col].filled);}
-			else if (w == 1) {debug_printf("   %d  |", brd->maze[row][col].filled);}
-			else if (w == 2) {debug_printf("|  %d   ", brd->maze[row][col].filled);}
-			else if (w == 3) {debug_printf("|  %d  |", brd->maze[row][col].filled);}
-			else if (w == 4) {debug_printf("___%d__", brd->maze[row][col].filled);}
-			else if (w == 5) {debug_printf("___%d__|", brd->maze[row][col].filled);}
-			else if (w == 6) {debug_printf("|__%d__", brd->maze[row][col].filled);}
-			else if (w == 7) {debug_printf("|__%d__|", brd->maze[row][col].filled);}
-			else if (w == 8) {debug_printf("   %d   ", brd->maze[row][col].filled);}
-			else if (w == 9) {debug_printf("   %d  |", brd->maze[row][col].filled);}
-			else if (w == 10){debug_printf("|  %d   ", brd->maze[row][col].filled);}
-			else if (w == 11){debug_printf("|  %d  |", brd->maze[row][col].filled);}
-			else if (w == 12){debug_printf("___%d__", brd->maze[row][col].filled);}
-			else if (w == 13){debug_printf("___%d__|", brd->maze[row][col].filled);}
-			else if (w == 14){debug_printf("|__%d__", brd->maze[row][col].filled);}
-			else if (w == 15){debug_printf("|__%d__|", brd->maze[row][col].filled);}
+  for (int row = 0; row < 10; row++) {
+		for (int col = 0; col < 10; col++) {
+			w = brd->maze[row][col] & 0x0F;
+			f = brd->maze[row][col] >> 4;
+			if (w == 0)      {debug_printf("   %d   ", f);}
+			else if (w == 1) {debug_printf("   %d  |", f);}
+			else if (w == 2) {debug_printf("|  %d   ", f);}
+			else if (w == 3) {debug_printf("|  %d  |", f);}
+			else if (w == 4) {debug_printf("___%d__", f);}
+			else if (w == 5) {debug_printf("___%d__|", f);}
+			else if (w == 6) {debug_printf("|__%d__", f);}
+			else if (w == 7) {debug_printf("|__%d__|", f);}
+			else if (w == 8) {debug_printf("   %d   ", f);}
+			else if (w == 9) {debug_printf("   %d  |", f);}
+			else if (w == 10){debug_printf("|  %d   ", f);}
+			else if (w == 11){debug_printf("|  %d  |", f);}
+			else if (w == 12){debug_printf("___%d__", f);}
+			else if (w == 13){debug_printf("___%d__|", f);}
+			else if (w == 14){debug_printf("|__%d__", f);}
+			else if (w == 15){debug_printf("|__%d__|", f);}
 		}
 		debug_printf("\r\n");
 	}
@@ -46,9 +48,21 @@ int main () {
 	hardware_init();
 	Accelerometer_Initialize();
 	LED_Initialize();
-	int fx = 1;
-	int fy = 1;
-	unsigned int walls[4][4] = {{11,10,12, 9},{3, 7,11, 3},{6, 12,1, 3},{14,13,6,5}};
+	int fx = 9;
+	int fy = 9;
+	unsigned int walls[10][10] = 
+    {
+      {11,14,8,12,12,8,13,10,9,15},
+		  {3,14,4,8,13,3,14,1,2,13},
+		  {6,12,9,2,9,2,9,3,3,15},
+			{11,11,3,6,1,2,5,3,6,9},
+			{2,5,3,14,1,3,14,1,10,5},
+			{2,12,5,10,5,6,9,3,2,9},
+			{6,9,10,4,9,10,1,3,7,3},
+			{14,1,6,13,3,2,5,3,10,5},
+			{15,3,10,12,1,6,12,5,6,9},
+		  {6,4,4,13,6,12,12,12,13,7}
+		};
 	ball * b = malloc(sizeof (ball));
 	board * brd = malloc(sizeof (board));
 	initializeBall(b);
