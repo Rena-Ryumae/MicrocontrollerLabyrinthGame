@@ -10,8 +10,6 @@ ACCELEROMETER_STATE state1;
 ACCELEROMETER_STATE state2;
 ACCELEROMETER_STATE state3;
 
-int n;
-
 void tmpprint (board * brd) {
 	unsigned int w;
 	unsigned int f;
@@ -106,7 +104,7 @@ int main () {
 	int fx = n-1;
 	int fy = n-1;
 	node ***p = init_board(n);
-	init_nodes(p, n);
+	init_nodes(p);
 	gen_maze(p);
 	node *no;
 	int w_num;

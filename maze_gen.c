@@ -22,7 +22,7 @@ node ***init_board(int n) {
 	return board;
 }
 
-void init_nodes(node*** p, int n) {
+void init_nodes(node*** p) {
 	node *dummy = malloc(sizeof(node));
 	dummy->x = -1;
 	dummy->y = -1;

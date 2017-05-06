@@ -21,7 +21,7 @@ typedef struct maze_node {
 
 node ***init_board(int n);
 	
-void init_nodes(node*** p, int n);
+void init_nodes(node*** p);
 
 void gen_maze(node ***p);
 
