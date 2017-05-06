@@ -1,24 +1,9 @@
+#include "maze_gen.h"
 #include <stdlib.h>
 #include <time.h>
 
 int n;
 struct maze_node *backtrack_queue = NULL;
-
-typedef struct maze_node {
-	int x;
-	int y;
-	int visited;
-	int free_neighbors;
-	int left_wall;
-	int right_wall;
-	int top_wall;
-	int bottom_wall;
-	struct maze_node *left_neighbor;
-	struct maze_node *right_neighbor;
-	struct maze_node *top_neighbor;
-	struct maze_node *bottom_neighbor;
-	struct maze_node *next;
-} node;
 
 int random(int n) {
 	srand(time(NULL));
@@ -172,6 +157,5 @@ void gen_maze(node ***p) {
 			remove_wall(curr, next);
 			curr = next;
 		}
-		
 	}
 }

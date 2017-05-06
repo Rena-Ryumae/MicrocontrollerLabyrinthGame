@@ -4,10 +4,13 @@
 #include <board.h>
 #include "utils.h"
 #include "game_structs.h"
+#include "maze_gen.h"
 
 ACCELEROMETER_STATE state1;
 ACCELEROMETER_STATE state2;
 ACCELEROMETER_STATE state3;
+
+int n;
 
 void tmpprint (board * brd) {
 	unsigned int w;
@@ -44,13 +47,78 @@ void mediumDelay() {
 	}
 }
 
+int get_wall(node *no) {
+	if (!no->left_wall && !no->right_wall && !no->top_wall && !no->bottom_wall) {
+		return 0;
+	}
+	else if (!no->left_wall && no->right_wall && !no->top_wall && !no->bottom_wall) {
+		return 1;
+	}
+	else if (no->left_wall && !no->right_wall && !no->top_wall && !no->bottom_wall) {
+		return 2;
+	}
+	else if (no->left_wall && no->right_wall && !no->top_wall && !no->bottom_wall) {
+		return 3;
+	}
+	else if (!no->left_wall && !no->right_wall && !no->top_wall && no->bottom_wall) {
+		return 4;
+	}
+	else if (!no->left_wall && no->right_wall && !no->top_wall && no->bottom_wall) {
+		return 5;
+	}
+	else if (no->left_wall && !no->right_wall && !no->top_wall && no->bottom_wall) {
+		return 6;
+	}
+	else if (no->left_wall && no->right_wall && !no->top_wall && no->bottom_wall) {
+		return 7;
+	}
+	else if (!no->left_wall && !no->right_wall && no->top_wall && !no->bottom_wall) {
+		return 8;
+	}
+	else if (!no->left_wall && no->right_wall && no->top_wall && !no->bottom_wall) {
+		return 9;
+	}
+	else if (no->left_wall && !no->right_wall && no->top_wall && !no->bottom_wall) {
+		return 10;
+	}
+	else if (no->left_wall && no->right_wall && no->top_wall && !no->bottom_wall) {
+		return 11;
+	}
+	else if (!no->left_wall && !no->right_wall && no->top_wall && no->bottom_wall) {
+		return 12;
+	}
+	else if (!no->left_wall && no->right_wall && no->top_wall && no->bottom_wall) {
+		return 13;
+	}
+	else if (no->left_wall && !no->right_wall && no->top_wall && no->bottom_wall) {
+		return 14;
+	}
+	else if (no->left_wall && no->right_wall && no->top_wall && no->bottom_wall) {
+		return 15;
+	}
+}
+
 int main () {
 	hardware_init();
 	Accelerometer_Initialize();
 	LED_Initialize();
+	n = 10;
 	int fx = 9;
 	int fy = 9;
-	unsigned int walls[10][10] = 
+	node ***p = init_board(n);
+	init_nodes(p, n);
+	gen_maze(p);
+	node *no;
+	int w_num;
+	unsigned int walls[n][n];
+	for (int x = 0; x < n; x++) {
+		for (int y = 0; y < n; y++) {
+			no = p[x][y];
+			w_num = get_wall(no);
+			walls[x][y] = w_num;
+		}
+	}
+	/*unsigned int walls[10][10] = 
     {
       {11,14,8,12,12,8,13,10,9,15},
 		  {3,14,4,8,13,3,14,1,2,13},
@@ -62,7 +130,7 @@ int main () {
 			{14,1,6,13,3,2,5,3,10,5},
 			{15,3,10,12,1,6,12,5,6,9},
 		  {6,4,4,13,6,12,12,12,13,7}
-		};
+		};*/
 	ball * b = malloc(sizeof (ball));
 	board * brd = malloc(sizeof (board));
 	initializeBall(b);
