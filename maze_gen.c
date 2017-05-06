@@ -4,6 +4,7 @@
 
 int n;
 struct maze_node *backtrack_queue = NULL;
+node *global_dummy = NULL;
 
 int random(int n) {
 	srand(time(NULL));
@@ -26,6 +27,7 @@ void init_nodes(node*** p, int n) {
 	dummy->x = -1;
 	dummy->y = -1;
 	dummy->visited = 1;
+	global_dummy = dummy;
 	for (int x = 0; x < n; x++) {
 		for (int y = 0; y < n; y++) {
 			int f_neighbors = 4;
@@ -33,10 +35,10 @@ void init_nodes(node*** p, int n) {
 			int r_wall = 1;
 			int t_wall = 1;
 			int b_wall = 1;
-			node *l_neighbor = dummy;
-			node *r_neighbor = dummy;
-			node *t_neighbor = dummy;
-			node *b_neighbor = dummy;
+			node *l_neighbor = global_dummy;
+			node *r_neighbor = global_dummy;
+			node *t_neighbor = global_dummy;
+			node *b_neighbor = global_dummy;
 			if (x == 0) {
 				f_neighbors--;
 				l_wall = 0;
@@ -158,4 +160,14 @@ void gen_maze(node ***p) {
 			curr = next;
 		}
 	}
+}
+
+void free_all(node ***p) {
+	for (int x = 0; x < n; x++) {
+		for (int y = 0; y < n; y++) {
+			free(p[x][y]);
+		}
+	}
+	free(global_dummy);
+	free(p);
 }

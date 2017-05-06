@@ -25,4 +25,6 @@ void init_nodes(node*** p, int n);
 
 void gen_maze(node ***p);
 
+void free_all(node ***p);
+
 #endif

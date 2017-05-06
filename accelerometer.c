@@ -103,8 +103,8 @@ int main () {
 	Accelerometer_Initialize();
 	LED_Initialize();
 	n = 10;
-	int fx = 9;
-	int fy = 9;
+	int fx = n-1;
+	int fy = n-1;
 	node ***p = init_board(n);
 	init_nodes(p, n);
 	gen_maze(p);
@@ -118,6 +118,7 @@ int main () {
 			walls[x][y] = w_num;
 		}
 	}
+	free_all(p);
 	/*unsigned int walls[10][10] = 
     {
       {11,14,8,12,12,8,13,10,9,15},
