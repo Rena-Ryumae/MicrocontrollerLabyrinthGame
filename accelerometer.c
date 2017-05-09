@@ -1,5 +1,4 @@
 #include <Board_Accelerometer.h>
-#include <Board_Magnetometer.h>
 #include <fsl_debug_console.h>
 #include <board.h>
 #include "utils.h"
@@ -100,7 +99,7 @@ int main () {
 	hardware_init();
 	Accelerometer_Initialize();
 	LED_Initialize();
-	n = 10;
+	int n = 2;
 	int fx = n-1;
 	int fy = n-1;
 	node ***p = init_board(n);
@@ -117,6 +116,7 @@ int main () {
 		}
 	}
 	free_all(p);
+	int s = 1;
 	/*unsigned int walls[10][10] = 
     {
       {11,14,8,12,12,8,13,10,9,15},
@@ -154,15 +154,17 @@ int main () {
 			LED_Off(); //"Flat"
 		}
 		tmpprint(brd);
-		/*debug_printf("------------------------\r\n");
-		
-		for (int row = 0; row < 4; row++) {
-				debug_printf("%d %d %d %d\r\n", brd->maze[row][0].filled, brd->maze[row][1].filled, brd->maze[row][2].filled, brd->maze[row][3].filled);
+	/*	if (s == 1) {
+			debug_printf("%d\r\n",fx);
+			debug_printf("%d\r\n",fy);
+			s = 0;
+		}
+		for (int col = 0; col < 10; col++) {
+			for (int row = 0; row < 10; row++) {
+				debug_printf("%d ", brd->maze[col][row]);
+			}
+			debug_printf("\r\n");
 		}*/
-		
-		/*debug_printf("State 1: %5d %5d %5d\r\n", state1.x, state1.y, state1.z);
-		debug_printf("State 2: %5d %5d %5d\r\n", state2.x, state2.y, state2.z);
-		debug_printf("State 3: %5d %5d %5d\r\n", state3.x, state3.y, state3.z);*/
 		mediumDelay();
 	}
 	
