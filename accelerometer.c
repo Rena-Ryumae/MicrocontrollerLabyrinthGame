@@ -1,5 +1,4 @@
 #include <Board_Accelerometer.h>
-#include <Board_Magnetometer.h>
 #include <fsl_debug_console.h>
 #include <board.h>
 #include "utils.h"
@@ -45,78 +44,15 @@ void mediumDelay() {
 	}
 }
 
-int get_wall(node *no) {
-	if (!no->left_wall && !no->right_wall && !no->top_wall && !no->bottom_wall) {
-		return 0;
-	}
-	else if (!no->left_wall && no->right_wall && !no->top_wall && !no->bottom_wall) {
-		return 1;
-	}
-	else if (no->left_wall && !no->right_wall && !no->top_wall && !no->bottom_wall) {
-		return 2;
-	}
-	else if (no->left_wall && no->right_wall && !no->top_wall && !no->bottom_wall) {
-		return 3;
-	}
-	else if (!no->left_wall && !no->right_wall && !no->top_wall && no->bottom_wall) {
-		return 4;
-	}
-	else if (!no->left_wall && no->right_wall && !no->top_wall && no->bottom_wall) {
-		return 5;
-	}
-	else if (no->left_wall && !no->right_wall && !no->top_wall && no->bottom_wall) {
-		return 6;
-	}
-	else if (no->left_wall && no->right_wall && !no->top_wall && no->bottom_wall) {
-		return 7;
-	}
-	else if (!no->left_wall && !no->right_wall && no->top_wall && !no->bottom_wall) {
-		return 8;
-	}
-	else if (!no->left_wall && no->right_wall && no->top_wall && !no->bottom_wall) {
-		return 9;
-	}
-	else if (no->left_wall && !no->right_wall && no->top_wall && !no->bottom_wall) {
-		return 10;
-	}
-	else if (no->left_wall && no->right_wall && no->top_wall && !no->bottom_wall) {
-		return 11;
-	}
-	else if (!no->left_wall && !no->right_wall && no->top_wall && no->bottom_wall) {
-		return 12;
-	}
-	else if (!no->left_wall && no->right_wall && no->top_wall && no->bottom_wall) {
-		return 13;
-	}
-	else if (no->left_wall && !no->right_wall && no->top_wall && no->bottom_wall) {
-		return 14;
-	}
-	else if (no->left_wall && no->right_wall && no->top_wall && no->bottom_wall) {
-		return 15;
-	}
-}
-
 int main () {
 	hardware_init();
 	Accelerometer_Initialize();
 	LED_Initialize();
-	n = 10;
-	int fx = n-1;
-	int fy = n-1;
-	node ***p = init_board(n);
-	init_nodes(p);
-	gen_maze(p);
-	node *no;
-	int w_num;
-	unsigned int walls[n][n];
-	for (int x = 0; x < n; x++) {
-		for (int y = 0; y < n; y++) {
-			no = p[x][y];
-			w_num = get_wall(no);
-			walls[x][y] = w_num;
-		}
-	}
-	free_all(p);
+	int n = 3;
+	final * f = malloc(sizeof (final));
+	f->found = 0;
+	int ** walls = gen_maze(n, f);
+	int s = 1;
 	/*unsigned int walls[10][10] = 
     {
       {11,14,8,12,12,8,13,10,9,15},
@@ -133,8 +69,7 @@ int main () {
 	ball * b = malloc(sizeof (ball));
 	board * brd = malloc(sizeof (board));
 	initializeBall(b);
-	initializeBoard(fx, fy, walls, brd, b);
-	
+	initializeBoard(f->fx, f->fy, walls, brd, b);
 	
 	int x;
 	int y;
@@ -153,16 +88,21 @@ int main () {
 		else {
 			LED_Off(); //"Flat"
 		}
-		tmpprint(brd);
-		/*debug_printf("------------------------\r\n");
 		
-		for (int row = 0; row < 4; row++) {
-				debug_printf("%d %d %d %d\r\n", brd->maze[row][0].filled, brd->maze[row][1].filled, brd->maze[row][2].filled, brd->maze[row][3].filled);
-		}*/
-		
-		/*debug_printf("State 1: %5d %5d %5d\r\n", state1.x, state1.y, state1.z);
-		debug_printf("State 2: %5d %5d %5d\r\n", state2.x, state2.y, state2.z);
-		debug_printf("State 3: %5d %5d %5d\r\n", state3.x, state3.y, state3.z);*/
+		if (s == 1) {
+			debug_printf("%d\r\n",f->fx);
+			debug_printf("%d\r\n",f->fy);
+			s = 0;
+		}
+		for (int col = 0; col < 3; col++) {
+			for (int row = 0; row < 3; row++) {
+				debug_printf("%d ", brd->maze[row][col]);
+			}
+			debug_printf("\r\n");
+		}
+		if (brd->finish == 1) {
+			debug_printf("99999\r\n");
+		}
 		mediumDelay();
 	}
 	

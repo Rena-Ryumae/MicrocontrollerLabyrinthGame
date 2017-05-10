@@ -20,7 +20,7 @@ BOX = 50
 WALLCOLOR = BLACK
 
 # SIZE x SIZE board
-SIZE = 10
+SIZE = 3
 
 # MARGIN is the wall/white space between each cell
 MARGIN = 6
@@ -163,7 +163,7 @@ def pick_walls(v, row, column):
 
 def draw_grid(grid):
     # Draw the grid
-    for row in range(10):
+    for row in range(SIZE):
         for column in range(SIZE):
             # value is provided from microcontroller board
             value = grid[row][column]
@@ -210,16 +210,18 @@ while not done:
     v = ser.readline()
     vstr = v.decode("utf-8")
     if ((len(vstr) == 3) & (CT == 0)):
-        FINALX = int(vstr[0])
+        FINALY = int(vstr[0])
         CT = CT + 1
         print("finalx")
-        print(FINALX)
-    elif ((len(vstr) == 3) & (CT == 1)):
-        FINALY = int(vstr[0])
-        print("finaly")
         print(FINALY)
+    elif ((len(vstr) == 3) & (CT == 1)):
+        FINALX = int(vstr[0])
+        print("finaly")
+        print(FINALX)
         START = False
-    elif ((GCT == 10) & (START == False)):
+    elif (len(vstr) == 7):
+        done = True
+    elif ((GCT == SIZE) & (START == False)):
         GRID.append((list(map(int, vstr.split()))))
         draw_grid(GRID)
         print(GRID)
