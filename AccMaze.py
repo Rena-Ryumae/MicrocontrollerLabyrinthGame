@@ -4,7 +4,7 @@
 #the next line is only needed for python2.x and not necessary for python3.x
 from __future__ import print_function, division
 
-import pygame, serial
+import pygame
 pygame.init()
 
 # Some basic colors
@@ -32,22 +32,23 @@ START = True
 #GRID = [[26, 9],[6, 5]]
 #GRID = [[10, 22],[6, 5]]
 
-# GRID = [[27,14,8,12,12,8,13,10,9,15],
-#         [3,14,4,8,13,3,14,1,2,13],
-#         [6,12,9,2,9,2,9,3,3,15],
-#         [11,11,3,6,1,2,5,3,6,9],
-#         [2,5,3,14,1,3,14,1,10,5],
-#         [2,12,5,10,5,6,9,3,2,9],
-#         [6,9,10,4,9,10,1,3,7,3],
-#         [14,1,6,13,3,2,5,3,10,5],
-#         [15,3,10,12,1,6,12,5,6,9],
-#         [6,4,4,13,6,12,12,12,13,7]]
-#
-# FINALX = 9
-# FINALY = 9
+GRID = [[27,14,8,12,12,8,13,10,9,15],
+        [3,14,4,8,13,3,14,1,2,13],
+        [6,12,9,2,9,2,9,3,3,15],
+        [11,11,3,6,1,2,5,3,6,9],
+        [2,5,3,14,1,3,14,1,10,5],
+        [2,12,5,10,5,6,9,3,2,9],
+        [6,9,10,4,9,10,1,3,7,3],
+        [14,1,6,13,3,2,5,3,10,5],
+        [15,3,10,12,1,6,12,5,6,9],
+        [6,4,4,13,6,12,12,12,13,7]]
+
+
 ##########################################################################################
 
-GRID = []
+#### NOT SURE IF NECESSARY YET ####
+# GRID_INITIAL will save the initial board
+GRID_INITIAL = [[]]
 
 # Set the height and width of the screen, based on number of boxes
 WINDOW_S = ((SIZE + 1) * MARGIN) + (SIZE * BOX)
@@ -62,16 +63,6 @@ done = False
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
-
-# Open serial port
-ser = serial.Serial()
-ser.baudrate = 115200
-ser.port = 'COM3'
-ser.open()
-
-# Start values for grid and finalx/finaly
-CT = 0
-GCT = 1
 
 # Draws right wall on screen
 def wall_right(row, column, wallc):
@@ -163,7 +154,7 @@ def pick_walls(v, row, column):
 
 def draw_grid(grid):
     # Draw the grid
-    for row in range(10):
+    for row in range(SIZE):
         for column in range(SIZE):
             # value is provided from microcontroller board
             value = grid[row][column]
@@ -179,17 +170,8 @@ def draw_grid(grid):
                               BOX,
                               BOX])
 
-            # End square
-            if (row == FINALX) & (column == FINALY):
-                pygame.draw.rect(screen,
-                                 RED,
-                                 [(MARGIN + BOX) * column + MARGIN,
-                                  (MARGIN + BOX) * row + MARGIN,
-                                  BOX,
-                                  BOX])
-
             # Ball
-            if (value >= 16):
+            if START & (value >= 16):
                 pygame.draw.circle(screen,
                                    GREEN,
                                    [(MARGIN + BOX) * column + MARGIN + (int(BOX / 2)),
@@ -203,32 +185,17 @@ while not done:
         if event.type == pygame.QUIT:  # If user clicked close
             done = True  # Flag that we are done so we exit this loop
 
-
     # Set the screen background
     screen.fill(WHITE)
 
-    v = ser.readline()
-    vstr = v.decode("utf-8")
-    if ((len(vstr) == 3) & (CT == 0)):
-        FINALX = int(vstr[0])
-        CT = CT + 1
-        print("finalx")
-        print(FINALX)
-    elif ((len(vstr) == 3) & (CT == 1)):
-        FINALY = int(vstr[0])
-        print("finaly")
-        print(FINALY)
-        START = False
-    elif ((GCT == 10) & (START == False)):
-        GRID.append((list(map(int, vstr.split()))))
-        draw_grid(GRID)
-        print(GRID)
-        GCT = 1
-        GRID = []
-    else:
-        GRID.append((list(map(int, vstr.split()))))
-        GCT = GCT + 1
-
+    # Start situation
+    if START:
+        # Preserve original maze contents (MAY NOT NEED TO DO THIS)
+        GRID_INITIAL = GRID
+        draw_grid(GRID_INITIAL)
+        if GRID_INITIAL[0][0] < 16:
+            START = False
+    draw_grid(GRID)
 
     # Limit to 60 frames per second
     clock.tick(60)

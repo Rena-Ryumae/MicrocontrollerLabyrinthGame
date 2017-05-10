@@ -23,7 +23,7 @@ typedef struct board_state {
 	int finishx;
 	int finishy;
 	//struct box_state maze[4][4]; // Array of boxes 2x2 array
-	unsigned int maze[10][10];
+	unsigned int maze[5][5];
 	int finish; // 1 if ball reached goal location
 } board;
 
@@ -46,14 +46,14 @@ box initializeBox(unsigned int w, ball * b, box * bx, int ycoord, int xcoord) {
 	return *bx;
 }*/
 
-void initializeBoard(int finx, int finy, unsigned int walls[10][10], board * brd, ball * b) {
+void initializeBoard(int finx, int finy, int ** walls, board * brd, ball * b) {
 	brd->startx = 0;
 	brd->starty = 0;
 	brd->finishx = finx;
 	brd->finishy = finy;
 	brd->finish = 0;
-	for (int row = 0; row < 10; row++) {
-		for (int col = 0; col < 10; col++) {
+	for (int row = 0; row < 5; row++) {
+		for (int col = 0; col < 5; col++) {
 			//box * bx = malloc(sizeof (box));
 			//brd->maze[row][col] = initializeBox(wall, b, bx, row, col);	
 			brd->maze[row][col] &= 0x00;

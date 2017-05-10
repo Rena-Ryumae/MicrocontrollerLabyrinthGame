@@ -1,173 +1,214 @@
 #include "maze_gen.h"
+#include <fsl_debug_console.h>
 #include <stdlib.h>
 #include <time.h>
 
 int n;
-struct maze_node *backtrack_queue = NULL;
-node *global_dummy = NULL;
 
 int random(int n) {
-	srand(time(NULL));
 	int random_number = rand() % n;
 	return random_number;
 }
 
-node ***init_board(int n) {
-	int i;
-	node ***board;
-	board = malloc(n*sizeof(int *));
-	for (i = 0; i < n; i++) {
-		board[i] = (node **)malloc(n*sizeof(node));
-	}
-	return board;
-}
-
-void init_nodes(node*** p) {
-	node *dummy = malloc(sizeof(node));
-	dummy->x = -1;
-	dummy->y = -1;
-	dummy->visited = 1;
-	global_dummy = dummy;
-	for (int x = 0; x < n; x++) {
-		for (int y = 0; y < n; y++) {
-			int f_neighbors = 4;
-			int l_wall = 1;
-			int r_wall = 1;
-			int t_wall = 1;
-			int b_wall = 1;
-			node *l_neighbor = global_dummy;
-			node *r_neighbor = global_dummy;
-			node *t_neighbor = global_dummy;
-			node *b_neighbor = global_dummy;
-			if (x == 0) {
-				f_neighbors--;
-				l_wall = 0;
-			}
-			if (x == (n-1)) {
-				f_neighbors--;
-				r_wall = 0;
-			}
-			if (y == 0) {
-				f_neighbors--;
-				b_wall = 0;
-			}
-			if (y == (n-1)) {
-				f_neighbors--;
-				t_wall = 0;
-			}
-			if (x != 0) {
-				b_neighbor = p[x-1][y];
-			}
-			if (y != 0) {
-				l_neighbor = p[x][y-1];
-			}
-			
-			node *n = malloc(sizeof(node));
-			n->x = x;
-			n->y = y;
-			n->visited = 0;
-			n->free_neighbors = f_neighbors;
-			n->left_wall = l_wall;
-			n->right_wall = r_wall;
-			n->top_wall = t_wall;
-			n->bottom_wall = b_wall;
-			n->left_neighbor = l_neighbor;
-			n->right_neighbor = r_neighbor;
-			n->top_neighbor = t_neighbor;
-			n->bottom_neighbor = b_neighbor;
-			n->next = NULL;
-			
-			b_neighbor->top_neighbor = n;
-			l_neighbor->right_neighbor = n;
-		}
-	}
-}
-
-node * get_next(node * n, int num) {
-	if (n->free_neighbors == 0) {
+int get_next(int ** b, int x, int y, int num, int n, int checked) {
+	debug_printf("Our y is %d \r\n", y);
+	debug_printf("In Next checked = %d \r\n", checked);
+	debug_printf("NUM = %d \r\n", num);
+	if (checked > 4) {
+		debug_printf("Returned Null for next \r\n");
 		return NULL;
-		}
-	node *temp;
+	}
 	if (num == 0) {
-		temp = n->left_neighbor;
+		x++;
+		if (x >= n) {
+			num++;
+			num = num % 4;
+			int next = get_next(b, x-1, y, num, n, checked+1);
+			return next;
+		}
+		else if (b[x][y] > 15) {
+			num++;
+			num = num % 4;
+			int next = get_next(b, x-1, y, num, n, checked+1);
+			return next;
+		}
+		debug_printf("Moving right \r\n");
+		return 1;
 	}
 	else if (num == 1) {
-		temp = n->right_neighbor;
+		y--;
+		debug_printf("In first if \r\n");
+		debug_printf("next y is %d \r\n", y);
+		if (y < 0) {
+			debug_printf("In nested if \r\n");
+			num++;
+			num = num % 4;
+			int next = get_next(b, x, y+1, num, n, checked+1);
+			debug_printf("next is %d \r\n", next);
+			return next;
+		}
+		else if (b[x][y] > 15) {
+			num++;
+			num = num % 4;
+			int next = get_next(b, x, y+1, num, n, checked+1);
+			debug_printf("next is %d \r\n", next);
+			return next;
+		}
+		debug_printf("Moving up \r\n");
+		return 4;
 	}
 	else if (num == 2) {
-		temp = n->top_neighbor;
+		x--;
+		if (x < 0) {
+			num++;
+			num = num % 4;
+			int next = get_next(b, x+1, y, num, n, checked+1);
+			return next;
+		}
+		else if (b[x][y] > 15) {
+			num++;
+			num = num % 4;
+			int next = get_next(b, x+1, y, num, n, checked+1);
+			return next;
+		}
+		debug_printf("Moving left \r\n");
+		return 2;
 	}
 	else {
-		temp = n->bottom_neighbor;
-	}
-	
-	if (temp->visited) {
-		int next_num = (num+1) % 4;
-		return get_next(n, next_num);
-	}
-	n->free_neighbors--;
-	return temp;
-}
-
-void remove_wall(node *curr, node *next) {
-	if (curr->left_neighbor == next) {
-		curr->left_wall = 0;
-		next->right_wall = 0;
-	}
-	else if (curr->right_neighbor == next) {
-		curr->right_wall = 0;
-		next->left_wall = 0;
-	}
-	else if (curr->top_neighbor == next) {
-		curr->top_wall = 0;
-		next->bottom_wall = 0;
-	}
-	else {
-		curr->bottom_wall = 0;
-		next->top_wall = 0;
-	}
-}
-
-void push(node *n) {
-	n->next = backtrack_queue;
-	backtrack_queue = n;
-}
-
-node * pop() {
-	node *temp = backtrack_queue;
-	backtrack_queue = temp->next;
-	return temp;
-}
-
-void gen_maze(node ***p) {
-	node *start = p[0][0];
-	node *next;
-	int num = random(4);
-	next = get_next(start, num);
-	remove_wall(start, next);
-	
-	node * curr;
-	curr = next;
-	push(start);
-	while(backtrack_queue != NULL) {
-		num = random(4);
-		next = get_next(curr, num);
-		if (next == NULL) {
-			curr = pop();
+		y++;
+		if ((y >= n) || (b[x][y] > 7)) {
+			num++;
+			num = num % 4;
+			return get_next(b, x, y-1, num, n, checked+1);
 		}
-		else {
-			remove_wall(curr, next);
-			curr = next;
-		}
+		debug_printf("Moving down \r\n");
+		return 3;
 	}
 }
 
-void free_all(node ***p) {
+int ** gen_maze(int n) {
+	int i;
+	int **board;
+	board = malloc(n*sizeof(int *));
+	if (board == NULL) {
+		int **p;
+		int *c;
+		**p = *c;
+		*c = -1;
+		return p;
+	}
+	for (i = 0; i < n; i++) {
+		board[i] = malloc(n*sizeof(int));
+		if (board[i] == NULL) {
+			int **p;
+			int *c;
+			**p = *c;
+			*c = -1;
+			return p; }
+	}
 	for (int x = 0; x < n; x++) {
 		for (int y = 0; y < n; y++) {
-			free(p[x][y]);
+			board[x][y] = 15;
 		}
 	}
-	free(global_dummy);
-	free(p);
+	int list_tracker = 0;
+	int *queue = malloc(2*n*n*sizeof(int));
+		if (queue == NULL) {
+			int **p;
+			int *c;
+			**p = *c;
+			*c = -1;
+			return p;
+		}
+	int x = 0;
+	int y = 0;
+	board[x][y] |= 0x10;
+	queue[list_tracker] = x;
+	queue[list_tracker++] = y;
+	list_tracker++;
+	int num = random(4);
+	int next = get_next(board, x, y, num, n, 1);
+	if (next == 1) { 
+		board[x][y] &= 0x1D;
+		x++;
+		board[x][y] &= 0x1C;
+		board[x][y] |= 0x10;
+		}
+	else if (next == 2) { 
+		board[x][y] &= 0x1C;
+		x--;
+		board[x][y] &= 0x1D;
+		board[x][y] |= 0x10;
+		}
+	else if (next == 3) { 
+		board[x][y] &= 0x1B;
+		y++;
+		board[x][y] &= 0x17;
+		board[x][y] |= 0x10;
+		}
+	else { 
+		board[x][y] &= 0x17;
+		y--;
+		board[x][y] &= 0x1B;
+		board[x][y] |= 0x10;
+		}
+			
+	queue[list_tracker] = x;
+	queue[list_tracker++] = y;
+	list_tracker++;
+	debug_printf("Beginning of while \r\n");
+	int f = 1;
+	while (list_tracker != 0) {
+		debug_printf("While loop iteration %d \r\n", f);
+		f++;
+		int num = random(4);
+		debug_printf("Y in while loop is %d \r\n", y);
+		int next = get_next(board, x, y, num, n, 1);
+		debug_printf("Got next = %d \r\n", next);
+		if (next == NULL) {
+			debug_printf("In Null if");
+			y = queue[list_tracker--];
+			x = queue[list_tracker--];
+		}
+		else {
+			debug_printf("in else");
+			if (next == 1) { 
+			board[x][y] &= 0x1D;
+			x++;
+			board[x][y] &= 0x1C;
+			board[x][y] |= 0x10;
+			}
+			else if (next == 2) { 
+			board[x][y] &= 0x1C;
+			x--;
+			board[x][y] &= 0x1D;
+			board[x][y] |= 0x10;
+			}
+			else if (next == 3) { 
+			board[x][y] &= 0x1B;
+			y++;
+			board[x][y] &= 0x17;
+			board[x][y] |= 0x10;
+			}
+			else { 
+			board[x][y] &= 0x17;
+			y--;
+			board[x][y] &= 0x1B;
+			board[x][y] |= 0x10;
+			}
+			debug_printf("Finished while loop iteration \r\n \r\n");
+			
+			queue[list_tracker] = x;
+			queue[list_tracker++] = y;
+			list_tracker++;
+		}
+	}
+	debug_printf("out of while");
+	for (int x = 0; x < n; x++) {
+		for (int y = 0; y < n; y++) {
+			board[x][y] &= 0x0F;
+		}
+	}
+	debug_printf("Finished maze_gen");
+	return board;
 }
