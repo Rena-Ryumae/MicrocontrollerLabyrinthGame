@@ -8,16 +8,14 @@ void initializeBall(ball * b) {
 	return;
 }
 
-void initializeBoard(int finx, int finy, int **walls, board * brd, ball * b) {
+void initializeBoard(int finx, int finy, char **walls, board * brd, ball * b, int n) {
 	brd->startx = 0;
 	brd->starty = 0;
 	brd->finishx = finx;
 	brd->finishy = finy;
 	brd->finish = 0;
-	for (int row = 0; row < 3; row++) {
-		for (int col = 0; col < 3; col++) {
-			//box * bx = malloc(sizeof (box));
-			//brd->maze[row][col] = initializeBox(wall, b, bx, row, col);	
+	for (int row = 0; row < n; row++) {
+		for (int col = 0; col < n; col++) {
 			brd->maze[row][col] &= 0x00;
 			brd->maze[row][col] |= walls[row][col]; 
 			if (row == 0 && col == 0) {
@@ -37,7 +35,7 @@ void update(int newx, int newy, board * brd, ball * b) {
 	brd->maze[b->x][b->y] |= 0x10; // Filled value becomes 1
 }
 
-void moveBall(unsigned int d, ball * b, board * brd) {
+void moveBall(unsigned char d, ball * b, board * brd) {
 	unsigned int wall = brd->maze[b->x][b->y] & 0x0F; //Gets last 4 bits (wall)
 	unsigned int check = wall & d;
 	// No wall, ball can move there

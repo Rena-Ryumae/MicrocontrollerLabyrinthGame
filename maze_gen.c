@@ -1,17 +1,21 @@
 #include "maze_gen.h"
 #include <fsl_debug_console.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 #include "game_structs.h"
 
 int n;
-
+time_t seed;
 int random(int n) {
+	seed = time(NULL);
+	debug_printf("ENTERS\r\n");
+	srand(seed);
 	int random_number = rand() % n;
 	return random_number;
 }
 
-int get_next(int ** b, int x, int y, int num, int n, int checked) {
+int get_next(char ** b, int x, int y, int num, int n, int checked) {
 	if (checked > 4) {
 		return NULL;
 	}
@@ -81,22 +85,22 @@ int get_next(int ** b, int x, int y, int num, int n, int checked) {
 	}
 }
 
-int ** gen_maze(int n, final * fin) {
+char ** gen_maze(int n, final * fin) {
 	int i;
-	int **board;
-	board = malloc(n*sizeof(int *));
+	char **board;
+	board = malloc(n*sizeof(char *));
 	if (board == NULL) {
-		int **p;
-		int *c;
+		char **p;
+		char *c;
 		**p = *c;
 		*c = -1;
 		return p;
 	}
 	for (i = 0; i < n; i++) {
-		board[i] = malloc(n*sizeof(int));
+		board[i] = malloc(n*sizeof(char));
 		if (board[i] == NULL) {
-			int **p;
-			int *c;
+			char **p;
+			char *c;
 			**p = *c;
 			*c = -1;
 			return p; }
@@ -109,8 +113,8 @@ int ** gen_maze(int n, final * fin) {
 	int list_tracker = 0;
 	int *queue = malloc(2*n*n*sizeof(int));
 		if (queue == NULL) {
-			int **p;
-			int *c;
+			char **p;
+			char *c;
 			**p = *c;
 			*c = -1;
 			return p;

@@ -13,14 +13,37 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
-# BOX is the width and height of one box
-BOX = 50
-
 # WALLCOLOR is wall color
 WALLCOLOR = BLACK
 
-# SIZE x SIZE board
-SIZE = 3
+# Start values for grid and finalx/finaly
+CT = 0
+GCT = 1
+
+# Open serial port
+ser = serial.Serial()
+ser.baudrate = 115200
+ser.port = 'COM3'
+ser.open()
+
+initialize = False
+while(initialize == False):
+    v = ser.readline()
+    vstr = v.decode("utf-8")
+    if ((len(vstr) < 5)):
+        initialize = True
+
+if ((len(vstr) < 5) & (CT == 0)):
+    SIZE = int(vstr[0:2])
+    CT = CT + 1
+    print("size")
+    print(SIZE)
+
+# BOX is width and height of one box
+if (SIZE >= 15):
+    BOX = 30
+else:
+    BOX = 50
 
 # MARGIN is the wall/white space between each cell
 MARGIN = 6
@@ -62,16 +85,6 @@ done = False
 
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
-
-# Open serial port
-ser = serial.Serial()
-ser.baudrate = 115200
-ser.port = 'COM3'
-ser.open()
-
-# Start values for grid and finalx/finaly
-CT = 0
-GCT = 1
 
 # Draws right wall on screen
 def wall_right(row, column, wallc):
@@ -196,26 +209,24 @@ def draw_grid(grid):
                                     (MARGIN + BOX) * row + MARGIN + (int(BOX / 2))],
                                    int(BOX / 2))
 
-
+# Set the screen background
+screen.fill(WHITE)
 # -------- Main Program Loop -----------
 while not done:
     for event in pygame.event.get():  # User did something
         if event.type == pygame.QUIT:  # If user clicked close
             done = True  # Flag that we are done so we exit this loop
 
-
-    # Set the screen background
-    screen.fill(WHITE)
-
     v = ser.readline()
     vstr = v.decode("utf-8")
-    if ((len(vstr) == 3) & (CT == 0)):
-        FINALY = int(vstr[0])
+
+    if ((len(vstr) < 5) & (CT == 1)):
+        FINALY = int(vstr[0:2])
         CT = CT + 1
         print("finalx")
         print(FINALY)
-    elif ((len(vstr) == 3) & (CT == 1)):
-        FINALX = int(vstr[0])
+    elif ((len(vstr) < 5) & (CT == 2)):
+        FINALX = int(vstr[0:2])
         print("finaly")
         print(FINALX)
         START = False

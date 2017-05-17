@@ -4,75 +4,75 @@
 #include "utils.h"
 #include "game_structs.h"
 #include "maze_gen.h"
+#include "challenge1.h"
 
 ACCELEROMETER_STATE state1;
 ACCELEROMETER_STATE state2;
 ACCELEROMETER_STATE state3;
-
-void tmpprint (board * brd) {
-	unsigned int w;
-	unsigned int f;
-	debug_printf("------------------------\r\n");
-  for (int row = 0; row < 10; row++) {
-		for (int col = 0; col < 10; col++) {
-			w = brd->maze[row][col] & 0x0F;
-			f = brd->maze[row][col] >> 4;
-			if (w == 0)      {debug_printf("   %d   ", f);}
-			else if (w == 1) {debug_printf("   %d  |", f);}
-			else if (w == 2) {debug_printf("|  %d   ", f);}
-			else if (w == 3) {debug_printf("|  %d  |", f);}
-			else if (w == 4) {debug_printf("___%d__", f);}
-			else if (w == 5) {debug_printf("___%d__|", f);}
-			else if (w == 6) {debug_printf("|__%d__", f);}
-			else if (w == 7) {debug_printf("|__%d__|", f);}
-			else if (w == 8) {debug_printf("   %d   ", f);}
-			else if (w == 9) {debug_printf("   %d  |", f);}
-			else if (w == 10){debug_printf("|  %d   ", f);}
-			else if (w == 11){debug_printf("|  %d  |", f);}
-			else if (w == 12){debug_printf("___%d__", f);}
-			else if (w == 13){debug_printf("___%d__|", f);}
-			else if (w == 14){debug_printf("|__%d__", f);}
-			else if (w == 15){debug_printf("|__%d__|", f);}
-		}
-		debug_printf("\r\n");
-	}
-}	
+int volatile sec = 0;
 
 void mediumDelay() {
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 4; i++) {
 		delay(); delay(); delay(); delay(); delay();
 	}
+}
+
+void Timer_Initialize() {
+	/*SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
+	PIT->MCR = 0x1;
+	PIT->CHANNEL[0].LDVAL = 20970000;
+	PIT->CHANNEL[0].TCTRL = 3;
+	NVIC_EnableIRQ(PIT0_IRQn);*/
+	
+	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK; //Enable clock to PIT module
+	PIT->MCR = 1; //Enables clock for PIT timer
+	PIT->CHANNEL[0].TCTRL |= (1 << 1); //Enables interrupts
+	PIT->CHANNEL[0].TCTRL |= (0 << 0); //Disable timer first
+	PIT->CHANNEL[0].LDVAL = 70970000; //Set load value of 0th PIT
+	PIT->CHANNEL[0].TCTRL |= (1 << 0); //Start timer
+	
+	NVIC_EnableIRQ(PIT0_IRQn);
+}
+
+void PIT0_IRQHandler() {
+	sec=sec+1;
+	PIT->CHANNEL[0].TFLG = 1;
 }
 
 int main () {
 	hardware_init();
 	Accelerometer_Initialize();
 	LED_Initialize();
-	int n = 3;
-	final * f = malloc(sizeof (final));
-	f->found = 0;
-	int ** walls = gen_maze(n, f);
-	int s = 1;
-	/*unsigned int walls[10][10] = 
-    {
-      {11,14,8,12,12,8,13,10,9,15},
-		  {3,14,4,8,13,3,14,1,2,13},
-		  {6,12,9,2,9,2,9,3,3,15},
-			{11,11,3,6,1,2,5,3,6,9},
-			{2,5,3,14,1,3,14,1,10,5},
-			{2,12,5,10,5,6,9,3,2,9},
-			{6,9,10,4,9,10,1,3,7,3},
-			{14,1,6,13,3,2,5,3,10,5},
-			{15,3,10,12,1,6,12,5,6,9},
-		  {6,4,4,13,6,12,12,12,13,7}
-		};*/
+	Timer_Initialize();
+	int button = 0;
+	int n;
+	int finx;
+	int finy;
 	ball * b = malloc(sizeof (ball));
-	board * brd = malloc(sizeof (board));
 	initializeBall(b);
-	initializeBoard(f->fx, f->fy, walls, brd, b);
-	
+	board * brd;
+	if (button == 0) {
+		n = 7;
+		final * f = malloc(sizeof (final));
+		f->found = 0;
+		char ** walls = gen_maze(n, f);
+		finx = f->fx;
+		finy = f->fy;
+		free(f);
+		brd = malloc(sizeof (board));
+		initializeBoard(finx, finy, walls, brd, b, n);
+	} 
+	else {
+		n = 15;
+		finx = 7;
+		finy = 14;
+		brd = malloc(sizeof (board));
+		char ** challenge1 = createChallenge();
+		initializeBoard(finx, finy, challenge1, brd, b, n);
+	}
 	int x;
 	int y;
+	int s = 1;
 	while(1) {
 		Accelerometer_GetState(&state1);
 		Accelerometer_GetState(&state2);
@@ -88,14 +88,19 @@ int main () {
 		else {
 			LED_Off(); //"Flat"
 		}
-		
+		//debug_printf("########################################%d\r\n", sec/2);
+		//__disable_irq();
 		if (s == 1) {
-			debug_printf("%d\r\n",f->fx);
-			debug_printf("%d\r\n",f->fy);
+			if (n < 10) {debug_printf("0%d\r\n",n);}
+			else {debug_printf("%d\r\n",n);}
+			if (finx < 10) {debug_printf("0%d\r\n",finx);}
+			else {debug_printf("%d\r\n",finx);}
+			if (finy < 10) {debug_printf("0%d\r\n",finy);}
+			else {debug_printf("%d\r\n",finy);}
 			s = 0;
 		}
-		for (int col = 0; col < 3; col++) {
-			for (int row = 0; row < 3; row++) {
+		for (int col = 0; col < n; col++) {
+			for (int row = 0; row < n; row++) {
 				debug_printf("%d ", brd->maze[row][col]);
 			}
 			debug_printf("\r\n");
@@ -103,8 +108,13 @@ int main () {
 		if (brd->finish == 1) {
 			debug_printf("99999\r\n");
 		}
+		//__enable_irq();
 		mediumDelay();
 	}
+
+		
+
+	
 	
 	
 }
