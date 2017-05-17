@@ -8,9 +8,7 @@
 int n;
 time_t seed;
 int random(int n) {
-	seed = time(NULL);
-	debug_printf("ENTERS\r\n");
-	srand(seed);
+	
 	int random_number = rand() % n;
 	return random_number;
 }
@@ -85,7 +83,8 @@ int get_next(char ** b, int x, int y, int num, int n, int checked) {
 	}
 }
 
-char ** gen_maze(int n, final * fin) {
+char ** gen_maze(int n, final * fin, int sdtime) {
+	srand(sdtime);
 	int i;
 	char **board;
 	board = malloc(n*sizeof(char *));

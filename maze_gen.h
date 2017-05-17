@@ -9,6 +9,6 @@ typedef struct final_state {
 	int found;
 } final;
 
-char ** gen_maze(int n, final * f);
+char ** gen_maze(int n, final * f, int sdtime);
 
 #endif

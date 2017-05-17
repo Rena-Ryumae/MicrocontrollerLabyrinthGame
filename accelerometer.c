@@ -9,6 +9,7 @@
 ACCELEROMETER_STATE state1;
 ACCELEROMETER_STATE state2;
 ACCELEROMETER_STATE state3;
+
 int volatile sec = 0;
 
 void mediumDelay() {
@@ -39,11 +40,7 @@ void PIT0_IRQHandler() {
 	PIT->CHANNEL[0].TFLG = 1;
 }
 
-int main () {
-	hardware_init();
-	Accelerometer_Initialize();
-	LED_Initialize();
-	Timer_Initialize();
+void gamePlay() {
 	int button = 0;
 	int n;
 	int finx;
@@ -52,15 +49,17 @@ int main () {
 	initializeBall(b);
 	board * brd;
 	if (button == 0) {
-		n = 7;
+		n = 5;
 		final * f = malloc(sizeof (final));
 		f->found = 0;
-		char ** walls = gen_maze(n, f);
+		int sdtime = PIT->CHANNEL[0].CVAL;
+		char ** walls = gen_maze(n, f, sdtime);
 		finx = f->fx;
 		finy = f->fy;
 		free(f);
 		brd = malloc(sizeof (board));
 		initializeBoard(finx, finy, walls, brd, b, n);
+		free(walls);
 	} 
 	else {
 		n = 15;
@@ -80,7 +79,7 @@ int main () {
 		// States are this way due to orientation of the board
 		y = (state1.x + state2.x + state3.x);
 		x = (state1.y + state2.y + state3.y);
-		if (brd->finish == 1) {LED_Off();return 0;}
+		if (brd->finish == 1) {LED_Off();return;}
 		if (y < -1200) {LED_Off();LEDBlue_On();moveBall(8, b, brd);} //UP
 		else if (y > 1200) {LED_Off();LEDGreen_On();moveBall(4,b,brd);} //DOWN
 		else if (x < -1200) {LED_Off();LEDRed_On();moveBall(2,b,brd);} //LEFT
@@ -107,14 +106,25 @@ int main () {
 		}
 		if (brd->finish == 1) {
 			debug_printf("99999\r\n");
+			free(b);
+			free(brd);
+			return;
 		}
 		//__enable_irq();
 		mediumDelay();
 	}
+	
+}
 
-		
-
+int main () {
+	hardware_init();
+	Accelerometer_Initialize();
+	LED_Initialize();
+	Timer_Initialize();
 	
-	
-	
+	while(1) {
+		gamePlay();
+		mediumDelay();
+		mediumDelay();
+	}
 }
