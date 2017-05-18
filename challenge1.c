@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+// 15x15 hardcoded maze
 char ** createChallenge() {
 	char **cha1;
 	int n = 15;
@@ -236,6 +237,7 @@ cha1[14][14] = 7;
 return cha1;
 }
 
+// 15x15 hardcoded maze
 char ** createChallenge2() {
 	char **cha1;
 	int n = 15;
