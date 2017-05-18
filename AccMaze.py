@@ -5,51 +5,19 @@
 from __future__ import print_function, division
 
 import pygame, serial
-pygame.init()
 
 # Some basic colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
+GREEN = (75, 248, 58)
 RED = (255, 0, 0)
+BLUE = (40, 250, 247)
 
 # WALLCOLOR is wall color
 WALLCOLOR = BLACK
 
-# Start values for grid and finalx/finaly
-CT = 0
-GCT = 1
-
-# Open serial port
-ser = serial.Serial()
-ser.baudrate = 115200
-ser.port = 'COM3'
-ser.open()
-
-initialize = False
-while(initialize == False):
-    v = ser.readline()
-    vstr = v.decode("utf-8")
-    if ((len(vstr) < 5)):
-        initialize = True
-
-if ((len(vstr) < 5) & (CT == 0)):
-    SIZE = int(vstr[0:2])
-    CT = CT + 1
-    print("size")
-    print(SIZE)
-
-# BOX is width and height of one box
-if (SIZE >= 15):
-    BOX = 30
-else:
-    BOX = 50
-
 # MARGIN is the wall/white space between each cell
 MARGIN = 6
-
-# START will be true when the first maze comes in where ball is at (0,0)
-START = True
 
 ###### TEMPORARY hardcoded grid whose info will be communicated from board ###############
 #GRID = [[26, 9],[6, 5]]
@@ -70,24 +38,8 @@ START = True
 # FINALY = 9
 ##########################################################################################
 
-GRID = []
-
-# Set the height and width of the screen, based on number of boxes
-WINDOW_S = ((SIZE + 1) * MARGIN) + (SIZE * BOX)
-WINDOW_SIZE = [WINDOW_S, WINDOW_S]
-screen = pygame.display.set_mode(WINDOW_SIZE)   # screen is a pygame Surface object
-
-# Set title of screen
-pygame.display.set_caption("Accelerometer Maze Game")
-
-# Loop until the user clicks the close button.
-done = False
-
-# Used to manage how fast the screen updates
-clock = pygame.time.Clock()
-
 # Draws right wall on screen
-def wall_right(row, column, wallc):
+def wall_right(row, column, wallc, screen, BOX):
     pygame.draw.rect(screen,
                      wallc,
                      [(MARGIN + BOX) * column + MARGIN + BOX,
@@ -96,7 +48,7 @@ def wall_right(row, column, wallc):
                       (2 * MARGIN) + BOX])
 
 # Draws left wall on screen
-def wall_left(row, column, wallc):
+def wall_left(row, column, wallc, screen, BOX):
     pygame.draw.rect(screen,
                      wallc,
                      [(MARGIN + BOX) * column,
@@ -105,7 +57,7 @@ def wall_left(row, column, wallc):
                       (2 * MARGIN) + BOX])
 
 # Draws top wall on screen
-def wall_up(row, column, wallc):
+def wall_up(row, column, wallc, screen, BOX):
     pygame.draw.rect(screen,
                      wallc,
                      [(MARGIN + BOX) * column,
@@ -114,7 +66,7 @@ def wall_up(row, column, wallc):
                       MARGIN])
 
 # Draws bottom wall on screen
-def wall_down(row, column, wallc):
+def wall_down(row, column, wallc, screen, BOX):
     pygame.draw.rect(screen,
                      wallc,
                      [(MARGIN + BOX) * column,
@@ -130,51 +82,51 @@ def get_color(v):
         return WALLCOLOR
 
 # Adds walls to screen given 0 or 1 for u, d, l, and r
-def add_walls(u,d,l,r, row, column):
-    wall_up(row, column, get_color(u))
-    wall_down(row, column, get_color(d))
-    wall_left(row, column, get_color(l))
-    wall_right(row, column, get_color(r))
+def add_walls(u,d,l,r, row, column, screen, BOX):
+    wall_up(row, column, get_color(u), screen, BOX)
+    wall_down(row, column, get_color(d), screen, BOX)
+    wall_left(row, column, get_color(l), screen, BOX)
+    wall_right(row, column, get_color(r), screen, BOX)
 
 # Picks which walls to add based on given v
-def pick_walls(v, row, column):
+def pick_walls(v, row, column, screen, BOX):
     if v == 0:
-        add_walls(0, 0, 0, 0, row, column)
+        add_walls(0, 0, 0, 0, row, column, screen, BOX)
     elif v == 1:
-        add_walls(0, 0, 0, 1, row, column)
+        add_walls(0, 0, 0, 1, row, column, screen, BOX)
     elif v == 2:
-        add_walls(0, 0, 1, 0, row, column)
+        add_walls(0, 0, 1, 0, row, column, screen, BOX)
     elif v == 3:
-        add_walls(0, 0, 1, 1, row, column)
+        add_walls(0, 0, 1, 1, row, column, screen, BOX)
     elif v == 4:
-        add_walls(0, 1, 0, 0, row, column)
+        add_walls(0, 1, 0, 0, row, column, screen, BOX)
     elif v == 5:
-        add_walls(0, 1, 0, 1, row, column)
+        add_walls(0, 1, 0, 1, row, column, screen, BOX)
     elif v == 6:
-        add_walls(0, 1, 1, 0, row, column)
+        add_walls(0, 1, 1, 0, row, column, screen, BOX)
     elif v == 7:
-        add_walls(0, 1, 1, 1, row, column)
+        add_walls(0, 1, 1, 1, row, column, screen, BOX)
     elif v == 8:
-        add_walls(1, 0, 0, 0, row, column)
+        add_walls(1, 0, 0, 0, row, column, screen, BOX)
     elif v == 9:
-        add_walls(1, 0, 0, 1, row, column)
+        add_walls(1, 0, 0, 1, row, column, screen, BOX)
     elif v == 10:
-        add_walls(1, 0, 1, 0, row, column)
+        add_walls(1, 0, 1, 0, row, column, screen, BOX)
     elif v == 11:
-        add_walls(1, 0, 1, 1, row, column)
+        add_walls(1, 0, 1, 1, row, column, screen, BOX)
     elif v == 12:
-        add_walls(1, 1, 0, 0, row, column)
+        add_walls(1, 1, 0, 0, row, column, screen, BOX)
     elif v == 13:
-        add_walls(1, 1, 0, 1, row, column)
+        add_walls(1, 1, 0, 1, row, column, screen, BOX)
     elif v == 14:
-        add_walls(1, 1, 1, 0, row, column)
+        add_walls(1, 1, 1, 0, row, column, screen, BOX)
     elif v == 15:
-        add_walls(1, 1, 1, 1, row, column)
+        add_walls(1, 1, 1, 1, row, column, screen, BOX)
     # If v >= 16, then ball is located there! Recurse pick_walls to find correct walls
     else:
-        pick_walls(v - 16, row, column)
+        pick_walls(v - 16, row, column, screen, BOX)
 
-def draw_grid(grid):
+def draw_grid(grid, SIZE, screen, BOX, FINALX, FINALY):
     # Draw the grid
     for row in range(SIZE):
         for column in range(SIZE):
@@ -182,7 +134,7 @@ def draw_grid(grid):
             value = grid[row][column]
 
             # Creates walls
-            pick_walls(value, row, column)
+            pick_walls(value, row, column, screen, BOX)
 
             # Creates box
             pygame.draw.rect(screen,
@@ -209,46 +161,138 @@ def draw_grid(grid):
                                     (MARGIN + BOX) * row + MARGIN + (int(BOX / 2))],
                                    int(BOX / 2))
 
-# Set the screen background
-screen.fill(WHITE)
-# -------- Main Program Loop -----------
-while not done:
-    for event in pygame.event.get():  # User did something
-        if event.type == pygame.QUIT:  # If user clicked close
-            done = True  # Flag that we are done so we exit this loop
+def main():
+    pygame.init()
+    myfont = pygame.font.SysFont('sitkasmallsitkatextsitkasubheadingsitkaheadingsitkadisplaysitkabanner', 30)
+    print(pygame.font.get_fonts())
 
-    v = ser.readline()
-    vstr = v.decode("utf-8")
+    WINDOW_SIZE = [500, 500]
+    screen = pygame.display.set_mode(WINDOW_SIZE)  # screen is a pygame Surface object
+    pygame.display.set_caption("Accelerometer Maze Game")
+    clock = pygame.time.Clock()
+    screen.fill(WHITE)
+    label1 = myfont.render('Tilt UP for Normal Play', True, BLACK)
+    label2 = myfont.render('Tilt DOWN for Challenge Play', True, BLACK)
 
-    if ((len(vstr) < 5) & (CT == 1)):
-        FINALY = int(vstr[0:2])
+    # Start values for grid and finalx/finaly
+    CT = 0
+    GCT = 1
+
+    # Open serial port
+    ser = serial.Serial()
+    ser.timeout = None
+    ser.baudrate = 115200
+    ser.port = 'COM3'
+    ser.open()
+
+    # Loop until the user clicks the close button.
+    done = False
+
+    initialize = False
+    while (initialize == False):
+        for event in pygame.event.get():  # User did something
+            if event.type == pygame.QUIT:  # If user clicked close
+                initialize = True  # Flag that we are done so we exit this loop
+                done = True
+
+        v = ser.readline()
+        vstr = v.decode("utf-8")
+        if ((len(vstr) < 5)):
+            initialize = True
+
+        pygame.draw.rect(screen,
+                         BLUE,
+                         [0, 0, 500, 250])
+        pygame.draw.rect(screen,
+                         GREEN,
+                         [0, 250, 500, 250])
+        screen.blit(label1, (70, 115))
+        screen.blit(label2, (30, 365))
+
+        clock.tick(60)
+        pygame.display.flip()
+
+    if ((len(vstr) < 5) & (CT == 0)):
+        SIZE = int(vstr[0:2])
         CT = CT + 1
-        print("finalx")
-        print(FINALY)
-    elif ((len(vstr) < 5) & (CT == 2)):
-        FINALX = int(vstr[0:2])
-        print("finaly")
-        print(FINALX)
-        START = False
-    elif (len(vstr) == 7):
-        done = True
-    elif ((GCT == SIZE) & (START == False)):
-        GRID.append((list(map(int, vstr.split()))))
-        draw_grid(GRID)
-        print(GRID)
-        GCT = 1
-        GRID = []
+        print("size")
+        print(SIZE)
+
+    # BOX is width and height of one box
+    if (SIZE >= 15):
+        BOX = 30
     else:
-        GRID.append((list(map(int, vstr.split()))))
-        GCT = GCT + 1
+        BOX = 50
+
+    # START will be true when the first maze comes in where ball is at (0,0)
+    START = True
+
+    GRID = []
+
+    pygame.display.quit()
+    
+    # Set the height and width of the screen, based on number of boxes
+    WINDOW_S = ((SIZE + 1) * MARGIN) + (SIZE * BOX)
+    WINDOW_SIZE = [WINDOW_S, WINDOW_S]
+    screen = pygame.display.set_mode(WINDOW_SIZE)  # screen is a pygame Surface object
+
+    # Set title of screen
+    pygame.display.set_caption("Accelerometer Maze Game")
+
+    # Used to manage how fast the screen updates
+    clock = pygame.time.Clock()
+    # Set the screen background
+    screen.fill(WHITE)
+    # -------- Main Program Loop -----------
+    while not done:
+        for event in pygame.event.get():  # User did something
+            if event.type == pygame.QUIT:  # If user clicked close
+                done = True  # Flag that we are done so we exit this loop
+
+        v = ser.readline()
+        vstr = v.decode("utf-8")
+
+        if ((len(vstr) < 5) & (CT == 0)):
+            SIZE = int(vstr[0:2])
+            CT = CT + 1
+            if (SIZE >= 15):
+                BOX = 30
+            else:
+                BOX = 50
+            print ("size")
+            print(SIZE)
+        elif ((len(vstr) < 5) & (CT == 1)):
+            FINALY = int(vstr[0:2])
+            CT = CT + 1
+            print("finalx")
+            print(FINALY)
+        elif ((len(vstr) < 5) & (CT == 2)):
+            FINALX = int(vstr[0:2])
+            print("finaly")
+            print(FINALX)
+            START = False
+        elif (len(vstr) == 7):
+            CT = 0
+        elif ((GCT == SIZE) & (START == False)):
+            GRID.append((list(map(int, vstr.split()))))
+            draw_grid(GRID, SIZE, screen, BOX, FINALX, FINALY)
+            print(GRID)
+            GCT = 1
+            GRID = []
+        else:
+            GRID.append((list(map(int, vstr.split()))))
+            GCT = GCT + 1
 
 
-    # Limit to 60 frames per second
-    clock.tick(60)
+        # Limit to 60 frames per second
+        clock.tick(60)
 
-    # Go ahead and update the screen with what we've drawn.
-    pygame.display.flip()
+        # Go ahead and update the screen with what we've drawn.
+        pygame.display.flip()
 
-# Be IDLE friendly. If you forget this line, the program will 'hang'
-# on exit.
-pygame.quit()
+    # Be IDLE friendly. If you forget this line, the program will 'hang'
+    # on exit.
+    pygame.quit()
+
+if __name__ == '__main__':
+    main()
