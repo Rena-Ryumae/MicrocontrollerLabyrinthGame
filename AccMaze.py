@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#########################################################################
+# This file ONLY creates the GUI and displays it. All other processes
+# are done solely on the FRDM board!
+#########################################################################
+
 # the next line is only needed for python2.x and not necessary for python3.x
 from __future__ import print_function, division
 
