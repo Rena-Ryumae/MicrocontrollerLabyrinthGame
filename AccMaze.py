@@ -177,7 +177,8 @@ def main():
     ser.baudrate = 115200
     ser.port = 'COM3'
     ser.open()
-
+    
+    # Initialize first screen
     pygame.init()
     myfont = pygame.font.SysFont('sitkasmallsitkatextsitkasubheadingsitkaheadingsitkadisplaysitkabanner', 30)
 
@@ -205,7 +206,7 @@ def main():
                 intro = True  # Flag that we are done so we exit this loop
                 initialize = True
                 done = True
-
+        # Only display screen for short amount of time
         if (TMPCT == 100):
             intro = True
         TMPCT = TMPCT + 1
@@ -225,12 +226,14 @@ def main():
         pygame.display.flip()
 
     pygame.display.quit()
-
+    
+    # Verify that the reset button was pressed 
     v = ser.readline()
     vstr = v.decode("utf-8")
     if ((len(vstr) == 9)):
         print("RESET")
 
+    # Second screen
     pygame.init()
     myfont = pygame.font.SysFont('sitkasmallsitkatextsitkasubheadingsitkaheadingsitkadisplaysitkabanner', 30)
 
@@ -289,7 +292,8 @@ def main():
     GRID = []
 
     pygame.display.quit()
-
+    
+    # Maze screen
     # Set the height and width of the screen, based on number of boxes
     WINDOW_S = ((SIZE + 1) * MARGIN) + (SIZE * BOX)
     WINDOW_SIZE = [WINDOW_S, WINDOW_S]
@@ -335,7 +339,6 @@ def main():
         elif ((GCT == SIZE) & (START == False)):
             GRID.append((list(map(int, vstr.split()))))
             draw_grid(GRID, SIZE, screen, BOX, FINALX, FINALY)
-            print(GRID)
             GCT = 1
             GRID = []
         else:
