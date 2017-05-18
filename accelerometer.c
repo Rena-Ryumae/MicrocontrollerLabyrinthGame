@@ -12,34 +12,33 @@ ACCELEROMETER_STATE state3;
 
 int volatile sec = 0;
 
+// Medium Delay between game rounds
 void mediumDelay() {
   for (int i = 0; i < 3; i++) {
 		delay(); delay(); delay(); delay(); delay();
 	}
 }
 
+// Initialize timer for seed values for random
 void Timer_Initialize() {
-	/*SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
-	PIT->MCR = 0x1;
-	PIT->CHANNEL[0].LDVAL = 20970000;
-	PIT->CHANNEL[0].TCTRL = 3;
-	NVIC_EnableIRQ(PIT0_IRQn);*/
-	
 	SIM->SCGC6 |= SIM_SCGC6_PIT_MASK; //Enable clock to PIT module
 	PIT->MCR = 1; //Enables clock for PIT timer
 	PIT->CHANNEL[0].TCTRL |= (1 << 1); //Enables interrupts
 	PIT->CHANNEL[0].TCTRL |= (0 << 0); //Disable timer first
 	PIT->CHANNEL[0].LDVAL = 70970000; //Set load value of 0th PIT
 	PIT->CHANNEL[0].TCTRL |= (1 << 0); //Start timer
-	
 	NVIC_EnableIRQ(PIT0_IRQn);
 }
 
+// ISR for timer
 void PIT0_IRQHandler() {
 	sec=sec+1;
 	PIT->CHANNEL[0].TFLG = 1;
 }
 
+// Determines which game mode should be played
+// Returns 0 if the normal game mode is chosen
+// Returns 1 if the challenge game mode is chosen
 int game_mode() {
 	int button;
 	int notready = 1;
@@ -56,16 +55,17 @@ int game_mode() {
 			LED_Off();LEDBlue_On();
 			button = 0;
 			notready = 0;
-		} //UP
+		} //UP indicates normal game mode
 		else if (y > 1200) {
 			LED_Off();LEDGreen_On();
 			button = 1;
 			notready = 0;
-		} //DOWN
+		} //DOWN indicates challenge game mode
 	}
 	return button;
 }
 
+// Each maze
 int gamePlay(int button, int g) {
 	int n;
 	int finx;
@@ -73,11 +73,13 @@ int gamePlay(int button, int g) {
 	ball * b = malloc(sizeof (ball));
 	initializeBall(b);
 	board * brd;
+	// Normal game play mode
 	if (button == 0) {
 		n = 7;
 		final * f = malloc(sizeof (final));
 		f->found = 0;
 		int sdtime = PIT->CHANNEL[0].CVAL;
+		// Uses random maze generation algorithm to generate maze
 		char ** walls = gen_maze(n, f, sdtime);
 		finx = f->fx;
 		finy = f->fy;
@@ -89,6 +91,7 @@ int gamePlay(int button, int g) {
 		}
 		free(walls);
 	} 
+	// Challenge game play mode
 	else {
 		n = 15;
 		brd = malloc(sizeof (board));
@@ -110,6 +113,7 @@ int gamePlay(int button, int g) {
 		free(challenge1);
 	}
 	int s = 1;
+	// Main loop
 	while(1) {
 		Accelerometer_GetState(&state1);
 		Accelerometer_GetState(&state2);
@@ -127,8 +131,7 @@ int gamePlay(int button, int g) {
 		else {
 			LED_Off(); //"Flat"
 		}
-		//debug_printf("########################################%d\r\n", sec/2);
-		//__disable_irq();
+		// Send initial information
 		if (s == 1) {
 			if (n < 10) {debug_printf("0%d\r\n",n);}
 			else {debug_printf("%d\r\n",n);}
@@ -138,32 +141,38 @@ int gamePlay(int button, int g) {
 			else {debug_printf("%d\r\n",finy);}
 			s = 0;
 		}
+		// Send board maze information
 		for (int col = 0; col < n; col++) {
 			for (int row = 0; row < n; row++) {
 				debug_printf("%d ", brd->maze[row][col]);
 			}
 			debug_printf("\r\n");
 		}
+		// Send finish signal when complete
 		if (brd->finish == 1) {
 			debug_printf("99999\r\n");
 			free(b);
 			free(brd);
 			return (1 - g);
 		}
-		//__enable_irq();
 		mediumDelay();
 	}
 	
 }
 
+// Main initiates full game
 int main () {
+	// Initialization
 	hardware_init();
 	Accelerometer_Initialize();
 	LED_Initialize();
 	Timer_Initialize();
+	// Sends signal that game is reset
 	debug_printf("9999999\r\n");
+	// Determines game mode
 	int button = game_mode();
 	int g = 0;
+	// Each maze game
 	while(1) {
 		g = gamePlay(button, g);
 		mediumDelay();
