@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 #########################################################################
-# This file ONLY creates the GUI and displays it. All other processes
-# are done solely on the FRDM board!
+# This file ONLY creates the GUI and displays it. All other game state
+# logic is done on the FRDM board!
 #########################################################################
 
 # the next line is only needed for python2.x and not necessary for python3.x
