@@ -2,12 +2,14 @@
 #include "game_structs.h"
 #include <fsl_debug_console.h>
 
+// Initializes ball struct
 void initializeBall(ball * b) {
 	b->x = 0;
 	b->y = 0;
 	return;
 }
 
+// Initializes board struct
 void initializeBoard(int finx, int finy, char **walls, board * brd, ball * b, int n) {
 	brd->startx = 0;
 	brd->starty = 0;
@@ -29,12 +31,14 @@ void initializeBoard(int finx, int finy, char **walls, board * brd, ball * b, in
 	}
 }
 
+// Updates ball position
 void update(int newx, int newy, board * brd, ball * b) {
 	b->x = newx;
 	b->y = newy;
 	brd->maze[b->x][b->y] |= 0x10; // Filled value becomes 1
 }
 
+// Checks if ball can move in desired direction
 void moveBall(unsigned char d, ball * b, board * brd) {
 	unsigned int wall = brd->maze[b->x][b->y] & 0x0F; //Gets last 4 bits (wall)
 	unsigned int check = wall & d;
