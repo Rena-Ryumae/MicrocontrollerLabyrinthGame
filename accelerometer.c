@@ -66,7 +66,7 @@ int game_mode() {
 	return button;
 }
 
-void gamePlay(int button) {
+int gamePlay(int button, int g) {
 	int n;
 	int finx;
 	int finy;
@@ -91,10 +91,18 @@ void gamePlay(int button) {
 	} 
 	else {
 		n = 15;
-		finx = 7;
-		finy = 14;
 		brd = malloc(sizeof (board));
-		char ** challenge1 = createChallenge();
+		char ** challenge1;
+		if (g == 0) {
+			challenge1 = createChallenge();
+			finx = 7;
+			finy = 14;
+		}
+		else {
+			challenge1 = createChallenge2();
+			finx = 7;
+			finy = 0;
+		}
 		initializeBoard(finx, finy, challenge1, brd, b, n);
 		for (int i = 0; i < n; i++) {
 			free(challenge1[i]);
@@ -111,7 +119,7 @@ void gamePlay(int button) {
 		// States are this way due to orientation of the board
 		y = (state1.x + state2.x + state3.x);
 		x = (state1.y + state2.y + state3.y);
-		if (brd->finish == 1) {LED_Off();return;}
+		if (brd->finish == 1) {LED_Off();return 0;}
 		if (y < -1200) {LED_Off();LEDBlue_On();moveBall(8, b, brd);} //UP
 		else if (y > 1200) {LED_Off();LEDGreen_On();moveBall(4,b,brd);} //DOWN
 		else if (x < -1200) {LED_Off();LEDRed_On();moveBall(2,b,brd);} //LEFT
@@ -140,7 +148,7 @@ void gamePlay(int button) {
 			debug_printf("99999\r\n");
 			free(b);
 			free(brd);
-			return;
+			return (1 - g);
 		}
 		//__enable_irq();
 		mediumDelay();
@@ -153,10 +161,11 @@ int main () {
 	Accelerometer_Initialize();
 	LED_Initialize();
 	Timer_Initialize();
+	debug_printf("9999999\r\n");
 	int button = game_mode();
-	
+	int g = 0;
 	while(1) {
-		gamePlay(button);
+		g = gamePlay(button, g);
 		mediumDelay();
 		mediumDelay();
 	}

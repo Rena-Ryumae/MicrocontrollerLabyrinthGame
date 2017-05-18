@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#the next line is only needed for python2.x and not necessary for python3.x
+# the next line is only needed for python2.x and not necessary for python3.x
 from __future__ import print_function, division
 
 import pygame, serial
@@ -19,9 +19,10 @@ WALLCOLOR = BLACK
 # MARGIN is the wall/white space between each cell
 MARGIN = 6
 
+
 ###### TEMPORARY hardcoded grid whose info will be communicated from board ###############
-#GRID = [[26, 9],[6, 5]]
-#GRID = [[10, 22],[6, 5]]
+# GRID = [[26, 9],[6, 5]]
+# GRID = [[10, 22],[6, 5]]
 
 # GRID = [[27,14,8,12,12,8,13,10,9,15],
 #         [3,14,4,8,13,3,14,1,2,13],
@@ -47,6 +48,7 @@ def wall_right(row, column, wallc, screen, BOX):
                       MARGIN,
                       (2 * MARGIN) + BOX])
 
+
 # Draws left wall on screen
 def wall_left(row, column, wallc, screen, BOX):
     pygame.draw.rect(screen,
@@ -55,6 +57,7 @@ def wall_left(row, column, wallc, screen, BOX):
                       (MARGIN + BOX) * row,
                       MARGIN,
                       (2 * MARGIN) + BOX])
+
 
 # Draws top wall on screen
 def wall_up(row, column, wallc, screen, BOX):
@@ -65,6 +68,7 @@ def wall_up(row, column, wallc, screen, BOX):
                       (2 * MARGIN) + BOX,
                       MARGIN])
 
+
 # Draws bottom wall on screen
 def wall_down(row, column, wallc, screen, BOX):
     pygame.draw.rect(screen,
@@ -74,6 +78,7 @@ def wall_down(row, column, wallc, screen, BOX):
                       (2 * MARGIN) + BOX,
                       MARGIN])
 
+
 # Returns white if v is 0 and WALLCOLOR otherwise
 def get_color(v):
     if v == 0:
@@ -81,12 +86,14 @@ def get_color(v):
     else:
         return WALLCOLOR
 
+
 # Adds walls to screen given 0 or 1 for u, d, l, and r
-def add_walls(u,d,l,r, row, column, screen, BOX):
+def add_walls(u, d, l, r, row, column, screen, BOX):
     wall_up(row, column, get_color(u), screen, BOX)
     wall_down(row, column, get_color(d), screen, BOX)
     wall_left(row, column, get_color(l), screen, BOX)
     wall_right(row, column, get_color(r), screen, BOX)
+
 
 # Picks which walls to add based on given v
 def pick_walls(v, row, column, screen, BOX):
@@ -126,6 +133,7 @@ def pick_walls(v, row, column, screen, BOX):
     else:
         pick_walls(v - 16, row, column, screen, BOX)
 
+
 def draw_grid(grid, SIZE, screen, BOX, FINALX, FINALY):
     # Draw the grid
     for row in range(SIZE):
@@ -161,10 +169,70 @@ def draw_grid(grid, SIZE, screen, BOX, FINALX, FINALY):
                                     (MARGIN + BOX) * row + MARGIN + (int(BOX / 2))],
                                    int(BOX / 2))
 
+
 def main():
+    # Open serial port
+    ser = serial.Serial()
+    ser.timeout = None
+    ser.baudrate = 115200
+    ser.port = 'COM3'
+    ser.open()
+
     pygame.init()
     myfont = pygame.font.SysFont('sitkasmallsitkatextsitkasubheadingsitkaheadingsitkadisplaysitkabanner', 30)
-    print(pygame.font.get_fonts())
+
+    WINDOW_SIZE = [500, 500]
+    screen = pygame.display.set_mode(WINDOW_SIZE)  # screen is a pygame Surface object
+    pygame.display.set_caption("Accelerometer Maze Game")
+    clock = pygame.time.Clock()
+    screen.fill(WHITE)
+    i1 = myfont.render('Microcontroller-based ', True, BLACK)
+    i2 = myfont.render('Labyrinth Game', True, BLACK)
+    i3 = myfont.render('Rena Ryumae', True, BLACK)
+    i4 = myfont.render('&', True, BLACK)
+    i5 = myfont.render('Ryan Hornung', True, BLACK)
+    i6 = myfont.render('Please press the reset button', True, BLACK)
+    i7 = myfont.render('on the FRDM board prior to ', True, BLACK)
+    i8 = myfont.render('starting. Have fun!! ', True, BLACK)
+
+    TMPCT = 0
+    done = False
+    initialize = False
+    intro = False
+    while (intro == False):
+        for event in pygame.event.get():  # User did something
+            if event.type == pygame.QUIT:  # If user clicked close
+                intro = True  # Flag that we are done so we exit this loop
+                initialize = True
+                done = True
+
+        if (TMPCT == 100):
+            intro = True
+        TMPCT = TMPCT + 1
+        pygame.draw.rect(screen,
+                         BLUE,
+                         [0, 0, 500, 500])
+        screen.blit(i1, (90, 55))
+        screen.blit(i2, (140, 85))
+        screen.blit(i3, (90, 175))
+        screen.blit(i4, (225, 205))
+        screen.blit(i5, (180, 235))
+        screen.blit(i6, (30, 335))
+        screen.blit(i7, (40, 375))
+        screen.blit(i8, (90, 405))
+
+        clock.tick(60)
+        pygame.display.flip()
+
+    pygame.display.quit()
+
+    v = ser.readline()
+    vstr = v.decode("utf-8")
+    if ((len(vstr) == 9)):
+        print("RESET")
+
+    pygame.init()
+    myfont = pygame.font.SysFont('sitkasmallsitkatextsitkasubheadingsitkaheadingsitkadisplaysitkabanner', 30)
 
     WINDOW_SIZE = [500, 500]
     screen = pygame.display.set_mode(WINDOW_SIZE)  # screen is a pygame Surface object
@@ -178,22 +246,13 @@ def main():
     CT = 0
     GCT = 1
 
-    # Open serial port
-    ser = serial.Serial()
-    ser.timeout = None
-    ser.baudrate = 115200
-    ser.port = 'COM3'
-    ser.open()
-
     # Loop until the user clicks the close button.
-    done = False
-
-    initialize = False
     while (initialize == False):
         for event in pygame.event.get():  # User did something
             if event.type == pygame.QUIT:  # If user clicked close
                 initialize = True  # Flag that we are done so we exit this loop
                 done = True
+                SIZE = 0
 
         v = ser.readline()
         vstr = v.decode("utf-8")
@@ -230,7 +289,7 @@ def main():
     GRID = []
 
     pygame.display.quit()
-    
+
     # Set the height and width of the screen, based on number of boxes
     WINDOW_S = ((SIZE + 1) * MARGIN) + (SIZE * BOX)
     WINDOW_SIZE = [WINDOW_S, WINDOW_S]
@@ -259,7 +318,7 @@ def main():
                 BOX = 30
             else:
                 BOX = 50
-            print ("size")
+            print("size")
             print(SIZE)
         elif ((len(vstr) < 5) & (CT == 1)):
             FINALY = int(vstr[0:2])
@@ -283,7 +342,6 @@ def main():
             GRID.append((list(map(int, vstr.split()))))
             GCT = GCT + 1
 
-
         # Limit to 60 frames per second
         clock.tick(60)
 
@@ -293,6 +351,7 @@ def main():
     # Be IDLE friendly. If you forget this line, the program will 'hang'
     # on exit.
     pygame.quit()
+
 
 if __name__ == '__main__':
     main()

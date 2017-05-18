@@ -3,4 +3,6 @@
 
 char ** createChallenge(void);
 
+char ** createChallenge2(void);
+
 #endif
