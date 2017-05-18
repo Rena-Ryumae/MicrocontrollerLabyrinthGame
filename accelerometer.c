@@ -13,7 +13,7 @@ ACCELEROMETER_STATE state3;
 int volatile sec = 0;
 
 void mediumDelay() {
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 3; i++) {
 		delay(); delay(); delay(); delay(); delay();
 	}
 }
@@ -40,8 +40,33 @@ void PIT0_IRQHandler() {
 	PIT->CHANNEL[0].TFLG = 1;
 }
 
-void gamePlay() {
-	int button = 0;
+int game_mode() {
+	int button;
+	int notready = 1;
+	int x;
+	int y;
+	while(notready) {
+		Accelerometer_GetState(&state1);
+		Accelerometer_GetState(&state2);
+		Accelerometer_GetState(&state3);
+		// States are this way due to orientation of the board
+		y = (state1.x + state2.x + state3.x);
+		x = (state1.y + state2.y + state3.y);
+		if (y < -1200) {
+			LED_Off();LEDBlue_On();
+			button = 0;
+			notready = 0;
+		} //UP
+		else if (y > 1200) {
+			LED_Off();LEDGreen_On();
+			button = 1;
+			notready = 0;
+		} //DOWN
+	}
+	return button;
+}
+
+void gamePlay(int button) {
 	int n;
 	int finx;
 	int finy;
@@ -49,7 +74,7 @@ void gamePlay() {
 	initializeBall(b);
 	board * brd;
 	if (button == 0) {
-		n = 5;
+		n = 7;
 		final * f = malloc(sizeof (final));
 		f->found = 0;
 		int sdtime = PIT->CHANNEL[0].CVAL;
@@ -59,6 +84,9 @@ void gamePlay() {
 		free(f);
 		brd = malloc(sizeof (board));
 		initializeBoard(finx, finy, walls, brd, b, n);
+		for (int i = 0; i < n; i++) {
+			free(walls[i]);
+		}
 		free(walls);
 	} 
 	else {
@@ -68,14 +96,18 @@ void gamePlay() {
 		brd = malloc(sizeof (board));
 		char ** challenge1 = createChallenge();
 		initializeBoard(finx, finy, challenge1, brd, b, n);
+		for (int i = 0; i < n; i++) {
+			free(challenge1[i]);
+		}
+		free(challenge1);
 	}
-	int x;
-	int y;
 	int s = 1;
 	while(1) {
 		Accelerometer_GetState(&state1);
 		Accelerometer_GetState(&state2);
 		Accelerometer_GetState(&state3);
+		int x;
+		int y;
 		// States are this way due to orientation of the board
 		y = (state1.x + state2.x + state3.x);
 		x = (state1.y + state2.y + state3.y);
@@ -121,9 +153,10 @@ int main () {
 	Accelerometer_Initialize();
 	LED_Initialize();
 	Timer_Initialize();
+	int button = game_mode();
 	
 	while(1) {
-		gamePlay();
+		gamePlay(button);
 		mediumDelay();
 		mediumDelay();
 	}

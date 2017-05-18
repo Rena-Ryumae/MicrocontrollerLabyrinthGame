@@ -206,5 +206,6 @@ char ** gen_maze(int n, final * fin, int sdtime) {
 			board[x][y] &= 0x0F;
 		}
 	}
+	free(queue);
 	return board;
 }

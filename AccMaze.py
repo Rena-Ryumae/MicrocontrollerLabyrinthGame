@@ -220,16 +220,7 @@ while not done:
     v = ser.readline()
     vstr = v.decode("utf-8")
 
-    if ((len(vstr) < 5) & (CT == 0)):
-        SIZE = int(vstr[0:2])
-        CT = CT + 1
-        if (SIZE >= 15):
-            BOX = 30
-        else:
-            BOX = 50
-        print ("size")
-        print(SIZE)
-    elif ((len(vstr) < 5) & (CT == 1)):
+    if ((len(vstr) < 5) & (CT == 1)):
         FINALY = int(vstr[0:2])
         CT = CT + 1
         print("finalx")
@@ -240,7 +231,7 @@ while not done:
         print(FINALX)
         START = False
     elif (len(vstr) == 7):
-        CT = 0
+        done = True
     elif ((GCT == SIZE) & (START == False)):
         GRID.append((list(map(int, vstr.split()))))
         draw_grid(GRID)
